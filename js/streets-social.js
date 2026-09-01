@@ -8,57 +8,14 @@ const STREET_INFO={
 };
 let selectedStreetLocation=null;
 function streetSafe(s){return escapeHtml(s)}
-function renderStreetShell(location){
- const info=STREET_INFO[location]||STREET_INFO['Междублоковото'];
- selectedStreetLocation=location;
- const title=E('streetSpotTitle'),sub=E('streetSpotText'),status=E('streetCurrentStatus'),actions=E('streetSocialActions');
- if(title)title.textContent=`${info.icon} ${location}`;
- if(sub)sub.textContent=info.text;
- if(status)status.textContent=`📍 ${location}`;
- document.querySelectorAll('.street-hotspot').forEach(x=>x.classList.toggle('selected',x.dataset.location===location));
- if(actions)actions.innerHTML=`<div class="tiny" style="margin-bottom:7px">Какво правиш тук?</div><div class="street-action-buttons">${info.actions.map(a=>`<button type="button" class="${currentProfile?.street_activity===a?'gold':''}" onclick="doStreetActivity('${a.replace(/'/g,"\\'")}')">${streetSafe(a)}</button>`).join('')}</div>`;
-}
-async function saveStreet(location,activity){
- const payload={street_location:location,street_activity:activity,street_updated_at:new Date().toISOString()};
- const {data,error}=await sb.from('profiles').update(payload).eq('id',currentUser.id).select('street_location,street_activity').single();
- if(error)throw error;
- if(currentProfile){currentProfile.street_location=data.street_location;currentProfile.street_activity=data.street_activity}
- return data;
-}
-async function selectStreetLocation(el,location){
- if(!currentUser||!STREET_INFO[location])return;
- const first=STREET_INFO[location].actions[0];
- renderStreetShell(location);
- if(E('players'))E('players').innerHTML='<div class="msg">🚶 Отиваш натам...</div>';
- try{
-   await saveStreet(location,first);
-   await loadStreetLocation(location);
- }catch(error){
-   console.error('street location',error);
-   if(E('players'))E('players').innerHTML=`<div class="msg err">Не успях да те преместя: ${streetSafe(bgError(error))}</div>`;
- }
- document.querySelector('.street-encounters')?.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-async function doStreetActivity(activity){
- if(!currentUser||!selectedStreetLocation)return;
- const allowed=STREET_INFO[selectedStreetLocation]?.actions||[];
- if(!allowed.includes(activity))return;
- if(E('streetSpotText'))E('streetSpotText').textContent=`Ти ${activity}.`;
- try{
-   await saveStreet(selectedStreetLocation,activity);
-   await loadStreetLocation(selectedStreetLocation);
- }catch(error){
-   console.error('street activity',error);
-   if(E('streetSpotText'))E('streetSpotText').textContent='Действието не можа да се запази: '+bgError(error);
- }
-}
-async function loadStreetLocation(location){
- if(!currentUser)return;
- location=location||selectedStreetLocation||currentProfile?.street_location||'Междублоковото';
- renderStreetShell(location);
- const {data,error}=await sb.from('profiles').select('id,username,side,level,respect,wins,losses,premium_avatar,name_style,vip_badge,street_location,street_activity').eq('street_location',location).order('respect',{ascending:false}).limit(30);
- if(error){if(E('players'))E('players').innerHTML=`<div class="msg err">${streetSafe(bgError(error))}</div>`;return}
- if(!E('players'))return;
- E('players').innerHTML=(data||[]).map(p=>{const me=p.id===currentUser.id;return `<div class="player street-player"><div><div>${styledName(p)} ${p.side==='Кючука'?'<span class="badge">Кючука</span>':'<span class="badge world">The World</span>'}${me?' <span class="pill">ТИ</span>':''}</div><small>📍 ${streetSafe(p.street_location)} · <b>${streetSafe(p.street_activity||'виси')}</b></small><small>Ниво ${p.level} · Респект ${p.respect} · ${p.wins}/${p.losses}</small></div>${me?'':`<button class="primary fight-btn" data-name="${streetSafe(p.username)}" onclick="fight('${p.id}',this)">АТАКУВАЙ ⚡ 20</button>`}</div>`}).join('')||'<div class="msg">В момента тук няма никого.</div>';
-}
-async function initStreetSocial(){if(!currentUser)return;await loadStreetLocation(currentProfile?.street_location||selectedStreetLocation||'Междублоковото')}
+function renderStreetShell(location){const info=STREET_INFO[location]||STREET_INFO['Междублоковото'];selectedStreetLocation=location;const title=E('streetSpotTitle'),sub=E('streetSpotText'),status=E('streetCurrentStatus'),actions=E('streetSocialActions');if(title)title.textContent=`${info.icon} ${location}`;if(sub)sub.textContent=info.text;if(status)status.textContent=`📍 ${location}`;document.querySelectorAll('.street-hotspot').forEach(x=>x.classList.toggle('selected',x.dataset.location===location));if(actions)actions.innerHTML=`<div class="tiny" style="margin-bottom:7px">Какво правиш тук?</div><div class="street-action-buttons">${info.actions.map(a=>`<button type="button" class="${currentProfile?.street_activity===a?'gold':''}" onclick="doStreetActivity('${a.replace(/'/g,"\\'")}')">${streetSafe(a)}</button>`).join('')}</div>`}
+async function saveStreet(location,activity){const payload={street_location:location,street_activity:activity,street_updated_at:new Date().toISOString()};const {data,error}=await sb.from('profiles').update(payload).eq('id',currentUser.id).select('street_location,street_activity').single();if(error)throw error;if(currentProfile){currentProfile.street_location=data.street_location;currentProfile.street_activity=data.street_activity}return data}
+async function selectStreetLocation(el,location){if(!currentUser||!STREET_INFO[location])return;const first=STREET_INFO[location].actions[0];renderStreetShell(location);if(E('players'))E('players').innerHTML='<div class="msg">🚶 Отиваш натам...</div>';try{await saveStreet(location,first);await loadStreetLocation(location)}catch(error){console.error('street location',error);if(E('players'))E('players').innerHTML=`<div class="msg err">Не успях да те преместя: ${streetSafe(bgError(error))}</div>`}document.querySelector('.street-encounters')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
+async function doStreetActivity(activity){if(!currentUser||!selectedStreetLocation)return;const allowed=STREET_INFO[selectedStreetLocation]?.actions||[];if(!allowed.includes(activity))return;if(E('streetSpotText'))E('streetSpotText').textContent=`Ти ${activity}...`;try{const {data,error}=await sb.rpc('do_street_action',{p_activity:activity});if(error)throw error;if(currentProfile){currentProfile.street_activity=activity;currentProfile.street_location=selectedStreetLocation;if(data?.money)currentProfile.money=(currentProfile.money||0)+data.money;if(data?.respect)currentProfile.respect=(currentProfile.respect||0)+data.respect}const reward=[data?.money?`+${data.money} 💶`:null,data?.respect?`+${data.respect} 😎`:null].filter(Boolean).join(' · ');if(E('streetEventResult'))E('streetEventResult').innerHTML=`<div class="msg ${reward?'ok':''}">${streetSafe(data?.event||`Ти ${activity}.`)}${reward?` <b>${reward}</b>`:''}</div>`;await loadStreetLocation(selectedStreetLocation);if(typeof loadProfile==='function')await loadProfile()}catch(error){console.error('street activity',error);if(E('streetSpotText'))E('streetSpotText').textContent='Действието не можа да се запази: '+bgError(error)}}
+async function loadStreetLocation(location){if(!currentUser)return;location=location||selectedStreetLocation||currentProfile?.street_location||'Междублоковото';renderStreetShell(location);const activeSince=new Date(Date.now()-5*60*1000).toISOString();const {data,error}=await sb.from('profiles').select('id,username,side,level,respect,wins,losses,premium_avatar,name_style,vip_badge,street_location,street_activity,street_updated_at').eq('street_location',location).order('respect',{ascending:false}).limit(30);if(error){if(E('players'))E('players').innerHTML=`<div class="msg err">${streetSafe(bgError(error))}</div>`;return}if(E('players'))E('players').innerHTML=(data||[]).map(p=>{const me=p.id===currentUser.id,online=new Date(p.street_updated_at)>=new Date(activeSince);return `<div class="player street-player"><div><div>${styledName(p)} ${p.side==='Кючука'?'<span class="badge">Кючука</span>':'<span class="badge world">The World</span>'}${me?' <span class="pill">ТИ</span>':online?' <span class="pill">ОНЛАЙН</span>':' <span class="tiny">неактивен</span>'}</div><small>📍 ${streetSafe(p.street_location)} · <b>${streetSafe(p.street_activity||'виси')}</b></small><small>Ниво ${p.level} · Респект ${p.respect} · ${p.wins}/${p.losses}</small></div>${me?'':`<button class="primary fight-btn" data-name="${streetSafe(p.username)}" onclick="fight('${p.id}',this)">АТАКУВАЙ ⚡ 20</button>`}</div>`}).join('')||'<div class="msg">В момента тук няма никого.</div>';await Promise.all([loadStreetMessages(location),loadStreetEvents(location)])}
+async function loadStreetMessages(location){if(!E('streetMessages'))return;const {data,error}=await sb.from('street_messages').select('id,user_id,message,created_at,profiles(username,side,premium_avatar,name_style,vip_badge)').eq('location',location).order('created_at',{ascending:false}).limit(12);if(error){E('streetMessages').innerHTML='<div class="tiny">Мохабетът временно замлъкна.</div>';return}E('streetMessages').innerHTML=(data||[]).map(m=>`<div class="player"><div><b>${streetSafe(m.profiles?.username||'Играч')}</b><small>${streetSafe(m.message)}</small></div></div>`).join('')||'<div class="tiny">Още никой не е казал нищо тук.</div>'}
+async function sendStreetMessage(){const input=E('streetChatInput');const message=(input?.value||'').trim();if(!message||!selectedStreetLocation)return;const {error}=await sb.from('street_messages').insert({user_id:currentUser.id,location:selectedStreetLocation,message});if(error){if(E('streetEventResult'))E('streetEventResult').innerHTML=`<div class="msg err">${streetSafe(bgError(error))}</div>`;return}input.value='';await loadStreetMessages(selectedStreetLocation)}
+async function loadStreetEvents(location){if(!E('streetEvents'))return;const {data,error}=await sb.from('street_events').select('event_text,reward_money,reward_respect,created_at,profiles(username)').eq('location',location).order('created_at',{ascending:false}).limit(10);if(error){E('streetEvents').innerHTML='';return}E('streetEvents').innerHTML=(data||[]).map(x=>`<div class="player"><div><b>${streetSafe(x.profiles?.username||'Някой')}</b><small>${streetSafe(x.event_text)}</small></div><small>${x.reward_money?`+${x.reward_money} 💶 `:''}${x.reward_respect?`+${x.reward_respect} 😎`:''}</small></div>`).join('')||'<div class="tiny">Засега кварталът е спокоен.</div>'}
+async function streetHeartbeat(){if(!currentUser||!selectedStreetLocation)return;await sb.from('profiles').update({street_updated_at:new Date().toISOString()}).eq('id',currentUser.id)}
+async function initStreetSocial(){if(!currentUser)return;await loadStreetLocation(currentProfile?.street_location||selectedStreetLocation||'Междублоковото');streetHeartbeat()}
+setInterval(()=>{if(currentUser&&document.getElementById('streets')?.classList.contains('active'))streetHeartbeat()},60000);
