@@ -1,3 +1,11 @@
+function selectStreetSpot(el,name,text){
+  const title=document.getElementById('streetSpotTitle'),sub=document.getElementById('streetSpotText');
+  if(title)title.textContent=name;
+  if(sub)sub.textContent=text;
+  document.querySelectorAll('.street-hotspot').forEach(x=>x.classList.remove('selected'));
+  if(el)el.classList.add('selected');
+  document.querySelector('.street-encounters')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 async function loadFragments(){
   const slots=[...document.querySelectorAll('[data-fragment]')];
   await Promise.all(slots.map(async slot=>{
