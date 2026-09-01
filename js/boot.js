@@ -1,35 +1,7 @@
-function selectStreetSpot(el,name,text){
-  const title=document.getElementById('streetSpotTitle'),sub=document.getElementById('streetSpotText');
-  if(title)title.textContent=name;
-  if(sub)sub.textContent=text;
-  document.querySelectorAll('.street-hotspot').forEach(x=>x.classList.remove('selected'));
-  if(el)el.classList.add('selected');
-  document.querySelector('.street-encounters')?.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-async function loadFragments(){
-  const slots=[...document.querySelectorAll('[data-fragment]')];
-  await Promise.all(slots.map(async slot=>{
-    const url=slot.dataset.fragment;
-    const res=await fetch(url,{cache:'no-store'});
-    if(!res.ok)throw new Error(`Не може да се зареди ${url}: HTTP ${res.status}`);
-    slot.outerHTML=await res.text();
-  }));
-}
+function selectStreetSpot(el,name,text){const title=document.getElementById('streetSpotTitle'),sub=document.getElementById('streetSpotText');if(title)title.textContent=name;if(sub)sub.textContent=text;document.querySelectorAll('.street-hotspot').forEach(x=>x.classList.remove('selected'));if(el)el.classList.add('selected');document.querySelector('.street-encounters')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
+async function loadFragments(){const slots=[...document.querySelectorAll('[data-fragment]')];await Promise.all(slots.map(async slot=>{const url=slot.dataset.fragment,res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error(`Не може да се зареди ${url}: HTTP ${res.status}`);slot.outerHTML=await res.text()}))}
 async function loadActions(){const {data,error}=await sb.from('action_log').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(8);if(error){E('actions').innerHTML='';return}E('actions').innerHTML=data?.length?data.map(a=>`<div class="event"><div><b>${a.action_type==='patrol'?'🗺️':a.action_type==='work'?'💼':'🛒'} ${escapeHtml(a.message)}</b><small>${new Date(a.created_at).toLocaleString('bg-BG')} ${a.money_change?`· ${a.money_change>0?'+':''}${a.money_change} €`:''} ${a.respect_change?`· +${a.respect_change} респект`:''}</small></div></div>`).join(''):'<div class="msg">Още няма история. Излез навън и направи нещо съмнително.</div>'}
-async function refreshAll(){if(!currentUser)return;await loadProfile();await Promise.all([loadPlayers(),loadLeaderboard(),loadActions(),loadActivity(),loadFanBattles(),loadGangs()])}
-function applyMainBackground(){
-  const bg="url('main-background.png?v=3')";
-  const mobile=window.matchMedia('(max-width:800px)').matches;
-  document.body.style.setProperty('background',`#151217 ${bg} center top/${mobile?'auto 100vh':'cover'} fixed no-repeat`,'important');
-}
+async function refreshAll(){if(!currentUser)return;await loadProfile();await Promise.all([loadPlayers(),loadLeaderboard(),loadActions(),loadActivity(),loadFanBattles(),loadGangs()]);if(E('streets')?.classList.contains('active'))await initStreetSocial()}
+function applyMainBackground(){const bg="url('main-background.png?v=3')",mobile=window.matchMedia('(max-width:800px)').matches;document.body.style.setProperty('background',`#151217 ${bg} center top/${mobile?'auto 100vh':'cover'} fixed no-repeat`,'important')}
 window.addEventListener('resize',applyMainBackground);
-(async()=>{
-  applyMainBackground();
-  try{await loadFragments()}catch(err){console.error(err);document.body.insertAdjacentHTML('beforeend',`<div class="msg err" style="max-width:900px;margin:20px auto">Проблем при зареждането на играта: ${escapeHtml(err.message)}</div>`);return}
-  const {data:{session}}=await sb.auth.getSession();
-  if(session?.user)await enterGame(session.user);else if(location.hash.includes('error=')){message('Линкът за потвърждение е изтекъл или вече е използван. Ако имейлът е потвърден, просто влез.');history.replaceState(null,'',location.pathname+location.search)}
-  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){E('game').classList.add('hidden');E('authBox').classList.remove('hidden')}else if(session?.user&&!currentUser)enterGame(session.user)});
-  activityTick=setInterval(()=>{if(currentActivity)updateActivityTimer()},1000);
-  fanTick=setInterval(()=>{if(currentUser&&E('fanPanel').classList.contains('active'))loadFanBattles();if(currentUser&&E('gangPanel').classList.contains('active'))loadGangs()},10000);
-  setInterval(()=>{if(currentUser)refreshAll()},60000)
-})();
+(async()=>{applyMainBackground();try{await loadFragments()}catch(err){console.error(err);document.body.insertAdjacentHTML('beforeend',`<div class="msg err" style="max-width:900px;margin:20px auto">Проблем при зареждането на играта: ${escapeHtml(err.message)}</div>`);return}const {data:{session}}=await sb.auth.getSession();if(session?.user){await enterGame(session.user);await initStreetSocial()}else if(location.hash.includes('error=')){message('Линкът за потвърждение е изтекъл или вече е използван. Ако имейлът е потвърден, просто влез.');history.replaceState(null,'',location.pathname+location.search)}sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){E('game').classList.add('hidden');E('authBox').classList.remove('hidden')}else if(session?.user&&!currentUser)enterGame(session.user)});activityTick=setInterval(()=>{if(currentActivity)updateActivityTimer()},1000);fanTick=setInterval(()=>{if(currentUser&&E('fanPanel').classList.contains('active'))loadFanBattles();if(currentUser&&E('gangPanel').classList.contains('active'))loadGangs();if(currentUser&&E('streets')?.classList.contains('active'))loadStreetLocation(selectedStreetLocation)},10000);setInterval(()=>{if(currentUser)refreshAll()},60000)})();
