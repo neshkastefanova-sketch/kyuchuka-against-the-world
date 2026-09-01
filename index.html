@@ -2,7 +2,7 @@
 
 <html lang="bg"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Кючука Against The World</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="css/styles.css?v=3" rel="stylesheet"/><link href="css/tactical.css?v=1" rel="stylesheet"/><link href="css/avatars.css?v=6" rel="stylesheet"/><link href="css/streets-layout.css?v=1" rel="stylesheet"/></head><body><div class="wrap">
+<link href="css/styles.css?v=3" rel="stylesheet"/><link href="css/tactical.css?v=1" rel="stylesheet"/><link href="css/avatars.css?v=6" rel="stylesheet"/><link href="css/streets-layout.css?v=1" rel="stylesheet"/><link href="css/map-layout.css?v=1" rel="stylesheet"/></head><body><div class="wrap">
 <section class="hero"><img class="login-logo" src="ChatGPT%20Image%20Sep%201%2C%202026%2C%2010_50_33%20AM.png" alt="Кючука Against The World"/><p>Пловдив е един. Но някои квартали са по-един от други.</p></section>
 <section class="card auth" id="authBox"><div class="tabs"><button class="primary" id="tabLogin" onclick="showAuth('login')">ВХОД</button><button id="tabSignup" onclick="showAuth('signup')">РЕГИСТРАЦИЯ</button></div><div id="authMessage"></div>
 <div id="loginForm"><div class="field"><label>Имейл</label><input autocomplete="email" id="loginEmail" type="email"/></div><div class="field"><label>Парола</label><input autocomplete="current-password" id="loginPass" type="password"/></div><button class="primary" id="loginBtn" onclick="login()" style="width:100%">ВЛИЗАМ В КВАРТАЛА</button></div>
@@ -12,7 +12,7 @@
 <div class="card hidden" id="activityCard" style="margin-top:14px;border-color:#725a19"><div style="display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap"><div><b id="activityTitle" style="font-size:18px">⏳ Героят е зает</b><div class="tiny" id="activitySub" style="margin-top:5px"></div></div><div style="text-align:right"><b id="activityTimer" style="font-size:24px;color:var(--gold)">00:00:00</b><br/><button class="gold hidden" id="claimBtn" onclick="claimActivity()" style="margin-top:7px">ВЗЕМИ НАГРАДАТА</button><button id="cancelActivityBtn" onclick="cancelActivity()" style="margin-top:7px;margin-left:6px">ЧУПИ СЕ</button></div></div></div>
 <div class="nav"><button data-panel="invPanel" onclick="openPanel('invPanel',this)">🧍 Герой</button><button class="active" data-panel="streets" onclick="openPanel('streets',this)">⚔️ Уличките</button><button data-panel="mapPanel" onclick="openPanel('mapPanel',this)">🗺️ Карта</button><button data-panel="workPanel" onclick="openPanel('workPanel',this)">💼 Работа</button><button data-panel="shopPanel" onclick="openPanel('shopPanel',this)">🛒 Пазар</button><button data-panel="fanPanel" onclick="openPanel('fanPanel',this)">⚽ Агитките</button><button data-panel="gangPanel" onclick="openPanel('gangPanel',this);loadGangs()">👊 Бандите</button><button data-panel="premiumPanel" onclick="openPanel('premiumPanel',this);loadPremiumShop()">🪙 Кючукойни</button></div>
 <div class="panel-slot" data-fragment="panels/streets.html?v=1"></div>
-<div class="panel-slot" data-fragment="panels/mapPanel.html?v=1"></div>
+<div class="panel-slot" data-fragment="panels/mapPanel.html?v=2"></div>
 <div class="panel-slot" data-fragment="panels/workPanel.html?v=1"></div>
 <div class="panel-slot" data-fragment="panels/shopPanel.html?v=1"></div>
 <div class="panel-slot" data-fragment="panels/invPanel.html?v=3"></div>
