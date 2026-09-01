@@ -17,7 +17,14 @@ async function loadFragments(){
 }
 async function loadActions(){const {data,error}=await sb.from('action_log').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(8);if(error){E('actions').innerHTML='';return}E('actions').innerHTML=data?.length?data.map(a=>`<div class="event"><div><b>${a.action_type==='patrol'?'🗺️':a.action_type==='work'?'💼':'🛒'} ${escapeHtml(a.message)}</b><small>${new Date(a.created_at).toLocaleString('bg-BG')} ${a.money_change?`· ${a.money_change>0?'+':''}${a.money_change} €`:''} ${a.respect_change?`· +${a.respect_change} респект`:''}</small></div></div>`).join(''):'<div class="msg">Още няма история. Излез навън и направи нещо съмнително.</div>'}
 async function refreshAll(){if(!currentUser)return;await loadProfile();await Promise.all([loadPlayers(),loadLeaderboard(),loadActions(),loadActivity(),loadFanBattles(),loadGangs()])}
+function applyMainBackground(){
+  const bg="url('main-background.png?v=3')";
+  const mobile=window.matchMedia('(max-width:800px)').matches;
+  document.body.style.setProperty('background',`#151217 ${bg} center top/${mobile?'auto 100vh':'cover'} fixed no-repeat`,'important');
+}
+window.addEventListener('resize',applyMainBackground);
 (async()=>{
+  applyMainBackground();
   try{await loadFragments()}catch(err){console.error(err);document.body.insertAdjacentHTML('beforeend',`<div class="msg err" style="max-width:900px;margin:20px auto">Проблем при зареждането на играта: ${escapeHtml(err.message)}</div>`);return}
   const {data:{session}}=await sb.auth.getSession();
   if(session?.user)await enterGame(session.user);else if(location.hash.includes('error=')){message('Линкът за потвърждение е изтекъл или вече е използван. Ако имейлът е потвърден, просто влез.');history.replaceState(null,'',location.pathname+location.search)}
