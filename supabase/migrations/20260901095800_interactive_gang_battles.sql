@@ -7,6 +7,9 @@ alter table public.gang_battles add column if not exists finish_reason text;
 alter table public.gang_battles add column if not exists challenger_damage integer not null default 0;
 alter table public.gang_battles add column if not exists defender_damage integer not null default 0;
 
+alter table public.gang_battles drop constraint if exists gang_battles_status_check;
+alter table public.gang_battles add constraint gang_battles_status_check check(status in ('open','live','finished','cancelled'));
+
 alter table public.gang_battle_entries add column if not exists battle_hp integer not null default 100;
 alter table public.gang_battle_entries add column if not exists battle_max_hp integer not null default 100;
 alter table public.gang_battle_entries add column if not exists total_damage integer not null default 0;
