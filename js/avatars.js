@@ -1,4 +1,4 @@
-const BASE_AVATARS={a01:'avatar-kyuchuka-male-01.png',a02:'avatar-kyuchuka-female-01.png'};
+const BASE_AVATARS={a01:'avatar-kyuchuka-male-01.png',a02:'avatar-kyuchuka-female-01.png',a03:'avatar-kyuchuka-male-02.png',a04:'avatar-kyuchuka-female-02.png'};
 let selectedSignupAvatar='a01';
 function avatarSrc(key){return BASE_AVATARS[key]||BASE_AVATARS.a01}
 function selectSignupAvatar(key){if(!BASE_AVATARS[key])return;selectedSignupAvatar=key;document.querySelectorAll('.avatar-choice').forEach(x=>x.classList.toggle('selected',x.dataset.avatar===key))}
