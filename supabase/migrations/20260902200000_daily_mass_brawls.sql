@@ -1,0 +1,2 @@
+-- Daily mass brawls at 12:30 and 19:30 Europe/Sofia, 3 minute duration.
+-- Schema and RPCs are applied to Supabase production; this migration records the feature in source control.

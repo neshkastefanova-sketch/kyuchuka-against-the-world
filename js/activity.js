@@ -2,16 +2,18 @@ async function loadActivity(){
  const {data,error}=await sb.from('activities').select('*').eq('user_id',currentUser.id).maybeSingle();
  if(error){return} currentActivity=data||null; renderActivity();
 }
-function placeActivityCard(isWork){
- const card=E('activityCard'),home=E('activityHome'),workSlot=E('workActivitySlot');
+function placeActivityCard(kind){
+ const card=E('activityCard'),home=E('activityHome'),workSlot=E('workActivitySlot'),patrolSlot=E('patrolActivitySlot');
  if(!card)return;
- if(isWork&&workSlot){workSlot.appendChild(card);card.classList.add('work-inline-activity')}
- else if(home){home.appendChild(card);card.classList.remove('work-inline-activity')}
+ card.classList.remove('work-inline-activity','patrol-inline-activity');
+ if(kind==='work'&&workSlot){workSlot.appendChild(card);card.classList.add('work-inline-activity')}
+ else if(kind==='patrol'&&patrolSlot){patrolSlot.appendChild(card);card.classList.add('patrol-inline-activity')}
+ else if(home){home.appendChild(card)}
 }
 function renderActivity(){
  const card=E('activityCard'); if(!card)return;
- if(!currentActivity){placeActivityCard(false);card.classList.add('hidden');document.querySelectorAll('.zone,.fight-btn').forEach(b=>b.disabled=false);return}
- const isWork=currentActivity.kind==='work'; placeActivityCard(isWork); card.classList.remove('hidden');
+ if(!currentActivity){placeActivityCard(null);card.classList.add('hidden');document.querySelectorAll('.zone,.fight-btn').forEach(b=>b.disabled=false);return}
+ const isWork=currentActivity.kind==='work'; placeActivityCard(currentActivity.kind); card.classList.remove('hidden');
  E('activityTitle').textContent=(isWork?'💼 Работиш: ':'🚶 Патрулираш: ')+currentActivity.activity_name;
  E('activitySub').textContent=`Започнато: ${new Date(currentActivity.started_at).toLocaleString('bg-BG')} · ${currentActivity.duration_minutes} мин.`;
  E('cancelActivityBtn').textContent=isWork?'🏃 ЧУПИ СЕ ОТ РАБОТА':'🏃 ЧУПИ СЕ ОТ ПАТРУЛА'; updateActivityTimer(); document.querySelectorAll('.zone,.fight-btn').forEach(b=>b.disabled=true);
