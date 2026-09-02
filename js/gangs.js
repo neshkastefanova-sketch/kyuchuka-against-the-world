@@ -1,4 +1,4 @@
-let currentGang=null,gangBattleChannel=null,gangBattleTick=null,currentGangBattleId=null;
+let currentGang=null,gangBattleChannel=null,gangBattleTick=null,currentGangBattleId=null,gangBattleView=null,gangBattleLastAttackAt=null,gangBattleRefreshBusy=false;
 
 async function loadGangs(){
  if(!currentUser)return;
@@ -21,12 +21,19 @@ async function leaveGang(){if(!confirm('Напускаш бандата?'))retur
 
 function gangBattleClock(ts){const left=Math.max(0,new Date(ts)-Date.now());const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);return `${m}:${String(s).padStart(2,'0')}`}
 function gangBattleStatus(b){const now=Date.now(),start=new Date(b.starts_at).getTime(),end=new Date(b.ends_at).getTime();if(b.status==='finished')return 'finished';if(now<start)return 'registration';if(now<end)return 'live';return 'ending'}
-function stopGangBattleRealtime(){if(gangBattleTick){clearInterval(gangBattleTick);gangBattleTick=null}if(gangBattleChannel){sb.removeChannel(gangBattleChannel);gangBattleChannel=null}currentGangBattleId=null}
+function stopGangBattleRealtime(){if(gangBattleTick){clearInterval(gangBattleTick);gangBattleTick=null}if(gangBattleChannel){sb.removeChannel(gangBattleChannel);gangBattleChannel=null}currentGangBattleId=null;gangBattleView=null;gangBattleLastAttackAt=null;gangBattleRefreshBusy=false}
+function tickGangBattle(id){
+ if(currentGangBattleId!==id||!gangBattleView)return;
+ const state=gangBattleStatus(gangBattleView),clock=E('gangBattleClock'),rendered=E('gangBattleState')?.dataset?.state;
+ if(clock)clock.textContent=state==='registration'?gangBattleClock(gangBattleView.starts_at):gangBattleClock(gangBattleView.ends_at);
+ if(gangBattleLastAttackAt)updateGangCooldown(gangBattleLastAttackAt);
+ if((state==='live'&&rendered==='registration')||state==='ending'||state==='finished')refreshGangBattle(id);
+}
 function startGangBattleRealtime(id){if(currentGangBattleId===id&&gangBattleChannel)return;stopGangBattleRealtime();currentGangBattleId=id;gangBattleChannel=sb.channel('gang-battle-'+id)
  .on('postgres_changes',{event:'*',schema:'public',table:'gang_battles',filter:`id=eq.${id}`},()=>refreshGangBattle(id))
  .on('postgres_changes',{event:'*',schema:'public',table:'gang_battle_entries',filter:`battle_id=eq.${id}`},()=>refreshGangBattle(id))
  .on('postgres_changes',{event:'INSERT',schema:'public',table:'gang_battle_events',filter:`battle_id=eq.${id}`},()=>refreshGangBattle(id))
- .subscribe();gangBattleTick=setInterval(()=>refreshGangBattle(id,true),1000)}
+ .subscribe();gangBattleTick=setInterval(()=>tickGangBattle(id),1000)}
 
 async function loadGangBattles(gangs){
  const {data:battles,error}=await sb.from('gang_battles').select('*').order('created_at',{ascending:false}).limit(10);if(error){E('gangBattleBox').innerHTML=`<div class="msg err">${escapeHtml(bgError(error))}</div>`;return}
@@ -43,27 +50,38 @@ function renderGangBattleCreate(gangs){
 async function createGangBattle(){const opp=Number(E('gangOpponent')?.value);if(!opp)return;const {data,error}=await sb.rpc('create_gang_battle',{p_defender_gang_id:opp,p_duration_minutes:2});if(error)return alert('❌ '+bgError(error));alert(`🔥 ${data.challenger} vs ${data.defender}: записването започна. Старт след 5 минути.`);await loadGangs()}
 async function joinGangBattle(id){const {data,error}=await sb.rpc('join_gang_battle',{p_battle_id:id});if(error)return alert('❌ '+bgError(error));alert(`✅ Записан си. Battle HP: ${data.battle_hp}`);await refreshGangBattle(id)}
 
-async function refreshGangBattle(id,tickOnly=false){
- if(!currentGang||!E('gangBattleBox'))return;
- const {data:b,error}=await sb.from('gang_battles').select('*').eq('id',id).maybeSingle();if(error||!b)return;if(!tickOnly&&b.status==='finished'){stopGangBattleRealtime();return loadGangs()}
- const {data:gangs}=await sb.from('gangs').select('id,name').in('id',[b.challenger_gang_id,b.defender_gang_id]);await renderGangBattle(b,new Map((gangs||[]).map(g=>[g.id,g])));
+async function refreshGangBattle(id){
+ if(!currentGang||!E('gangBattleBox')||gangBattleRefreshBusy)return;
+ gangBattleRefreshBusy=true;
+ try{
+  const {data:b,error}=await sb.from('gang_battles').select('*').eq('id',id).maybeSingle();if(error||!b)return;
+  gangBattleView=b;
+  if(b.status==='finished'){stopGangBattleRealtime();return loadGangs()}
+  const {data:gangs,error:gangsError}=await sb.from('gangs').select('id,name').in('id',[b.challenger_gang_id,b.defender_gang_id]);if(gangsError)return;
+  await renderGangBattle(b,new Map((gangs||[]).map(g=>[g.id,g])));
+ }finally{gangBattleRefreshBusy=false}
 }
 async function renderGangBattle(b,byId){
+ gangBattleView=b;
  const state=gangBattleStatus(b);if(state==='ending'){await sb.rpc('finish_gang_battle',{p_battle_id:b.id});return refreshGangBattle(b.id)}
- const [{data:entries},{data:events}]=await Promise.all([
+ const [{data:entries,error:entriesError},{data:events,error:eventsError}]=await Promise.all([
   sb.from('gang_battle_entries').select('battle_id,user_id,gang_id,power,battle_hp,battle_max_hp,total_damage,knocked_out,last_attack_at').eq('battle_id',b.id).order('joined_at'),
   sb.from('gang_battle_events').select('id,actor_id,target_id,event_type,message,damage,target_hp,special_effect,created_at').eq('battle_id',b.id).order('id',{ascending:false}).limit(80)
  ]);
+ if(entriesError||eventsError)return;
  const ids=[...new Set((entries||[]).map(e=>e.user_id))],names=new Map();if(ids.length){const {data:people}=await sb.from('profiles').select('id,username').in('id',ids);(people||[]).forEach(p=>names.set(p.id,p.username))}
  const mine=(entries||[]).find(e=>e.user_id===currentUser.id),myGang=mine?.gang_id||currentGang?.gang_id,enemy=(entries||[]).filter(e=>e.gang_id!==myGang),weapons=mine&&state==='live'&&!mine.knocked_out?await gangBattleWeaponOptions():[];
+ gangBattleLastAttackAt=mine?.last_attack_at||null;
  const c=(entries||[]).filter(x=>x.gang_id===b.challenger_gang_id),d=(entries||[]).filter(x=>x.gang_id===b.defender_gang_id),sumHP=list=>list.reduce((n,x)=>n+(x.battle_hp||0),0),sumDmg=list=>list.reduce((n,x)=>n+(x.total_damage||0),0);
  const titleA=byId.get(b.challenger_gang_id)?.name||'Банда',titleB=byId.get(b.defender_gang_id)?.name||'Банда';
  let action='';
- if(state==='registration')action=`<div class="msg">📝 Записване до старта: <b>${gangBattleClock(b.starts_at)}</b>. След старта няма нови участници.</div>${mine?'<button class="primary" disabled>✅ ЗАПИСАН СИ</button>':`<button class="primary" style="width:100%" onclick="joinGangBattle(${b.id})">ВКЛЮЧИ СЕ В БИТКАТА</button>`}`;
+ if(state==='registration')action=`<div class="msg">📝 Записването е отворено до старта. След старта няма нови участници.</div>${mine?'<button class="primary" disabled>✅ ЗАПИСАН СИ</button>':`<button class="primary" style="width:100%" onclick="joinGangBattle(${b.id})">ВКЛЮЧИ СЕ В БИТКАТА</button>`}`;
  else if(state==='live'&&mine){action=mine.knocked_out?'<div class="msg err">💀 Нокаутиран си — можеш да следиш битката, но не можеш да атакуваш.</div>':`<div class="gang-controls"><div class="field"><label>Конкретен противник</label><select id="gangBattleTarget">${enemy.filter(x=>!x.knocked_out).map(x=>`<option value="${x.user_id}">${escapeHtml(names.get(x.user_id)||'Играч')} · ❤️ ${x.battle_hp}</option>`).join('')}</select></div><div class="field"><label>Оръжие</label><select id="gangBattleWeapon"><option value="">👊 С голи ръце</option>${weapons.map(w=>`<option value="${w.item_id}">${escapeHtml(w.items.name)}${w.quantity>1?' ×'+w.quantity:''}${w.items.combat_effect==='burn'?' 🔥':''}</option>`).join('')}</select></div><button class="primary" id="gangAttackBtn" onclick="attackGangBattle(${b.id})">АТАКУВАЙ</button><div class="tiny" id="gangCooldown">Cooldown: 5 сек.</div></div>`}
  else if(state==='live')action='<div class="msg">Битката тече. Не си записан и не можеш да се включиш след старта.</div>';
  const rows=list=>list.map(x=>`<div class="gang-fighter ${x.knocked_out?'ko':''}"><b>${escapeHtml(names.get(x.user_id)||'Играч')}</b><span>❤️ ${x.battle_hp}/${x.battle_max_hp}${x.knocked_out?' · НОКАУТ':''}</span><div class="hpbar"><i style="width:${Math.max(0,Math.min(100,(x.battle_hp/x.battle_max_hp)*100))}%"></i></div><small>Нанесени щети: ${x.total_damage||0}</small></div>`).join('')||'<div class="tiny">Няма записани.</div>';
- E('gangBattleBox').innerHTML=`<div class="gang-live"><div class="fanvs"><div><b>${escapeHtml(titleA)}</b><div class="fanbig">❤️ ${sumHP(c)}</div><small>щети ${sumDmg(c)}</small></div><b>VS</b><div><b>${escapeHtml(titleB)}</b><div class="fanbig">❤️ ${sumHP(d)}</div><small>щети ${sumDmg(d)}</small></div></div><p class="gang-state">${state==='registration'?'📝 Записване':'🔴 LIVE'} · ${state==='registration'?gangBattleClock(b.starts_at):gangBattleClock(b.ends_at)}</p><div class="gang-teams"><div><h4>${escapeHtml(titleA)}</h4>${rows(c)}</div><div><h4>${escapeHtml(titleB)}</h4>${rows(d)}</div></div>${action}<h3>📡 Live battle log</h3><div class="gang-live-log">${(events||[]).map(e=>`<div class="gang-log-line ${e.event_type}"><small>${new Date(e.created_at).toLocaleTimeString('bg-BG')}</small><b>${escapeHtml(e.message)}</b>${e.damage?`<span>−${e.damage} HP · остава ${e.target_hp} HP</span>`:''}${e.special_effect?`<em>${escapeHtml(e.special_effect)}</em>`:''}</div>`).join('')||'<div class="msg">Битката още няма действия.</div>'}</div></div>`;
+ const prevTarget=E('gangBattleTarget')?.value||'',prevWeapon=E('gangBattleWeapon')?.value||'';
+ E('gangBattleBox').innerHTML=`<div class="gang-live"><div class="fanvs"><div><b>${escapeHtml(titleA)}</b><div class="fanbig">❤️ ${sumHP(c)}</div><small>щети ${sumDmg(c)}</small></div><b>VS</b><div><b>${escapeHtml(titleB)}</b><div class="fanbig">❤️ ${sumHP(d)}</div><small>щети ${sumDmg(d)}</small></div></div><p class="gang-state" id="gangBattleState" data-state="${state}">${state==='registration'?'📝 Записване':'🔴 LIVE'} · <span id="gangBattleClock">${state==='registration'?gangBattleClock(b.starts_at):gangBattleClock(b.ends_at)}</span></p><div class="gang-teams"><div><h4>${escapeHtml(titleA)}</h4>${rows(c)}</div><div><h4>${escapeHtml(titleB)}</h4>${rows(d)}</div></div>${action}<h3>📡 Live battle log</h3><div class="gang-live-log">${(events||[]).map(e=>`<div class="gang-log-line ${e.event_type}"><small>${new Date(e.created_at).toLocaleTimeString('bg-BG')}</small><b>${escapeHtml(e.message)}</b>${e.damage?`<span>−${e.damage} HP · остава ${e.target_hp} HP</span>`:''}${e.special_effect?`<em>${escapeHtml(e.special_effect)}</em>`:''}</div>`).join('')||'<div class="msg">Битката още няма действия.</div>'}</div></div>`;
+ const target=E('gangBattleTarget'),weapon=E('gangBattleWeapon');if(target&&prevTarget&&[...target.options].some(o=>o.value===prevTarget))target.value=prevTarget;if(weapon&&[...weapon.options].some(o=>o.value===prevWeapon))weapon.value=prevWeapon;
  if(mine&&!mine.knocked_out&&state==='live')updateGangCooldown(mine.last_attack_at);
 }
 async function gangBattleWeaponOptions(){const {data}=await sb.from('inventory').select('item_id,quantity,items(id,name,item_type,combat_effect,consumed_on_use)').eq('user_id',currentUser.id);return (data||[]).filter(x=>x.items?.item_type==='weapon'&&(x.quantity||0)>0)}
