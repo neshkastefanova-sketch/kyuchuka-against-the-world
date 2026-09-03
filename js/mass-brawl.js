@@ -2,11 +2,17 @@ async function loadMassBrawls(){
  const box=E('massBrawlBox');if(!box||!currentUser)return;
  await sb.rpc('ensure_mass_brawls');
  const now=new Date().toISOString();
- const {data:brawls,error}=await sb.from('mass_brawls').select('*').gte('ends_at',now).order('starts_at').limit(4);
+ const {data:brawls,error}=await sb.from('mass_brawls').select('*').gte('ends_at',now).order('starts_at').limit(6);
  if(error){box.innerHTML=`<div class="msg err">${escapeHtml(bgError(error))}</div>`;return}
- const ids=(brawls||[]).map(b=>b.id);let entries=[];
+ const visible=[];
+ for(const slot of ['12:30','19:30']){
+  const next=(brawls||[]).find(b=>new Date(b.starts_at).toLocaleTimeString('bg-BG',{timeZone:'Europe/Sofia',hour:'2-digit',minute:'2-digit',hour12:false})===slot);
+  if(next)visible.push(next);
+ }
+ visible.sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+ const ids=visible.map(b=>b.id);let entries=[];
  if(ids.length){const r=await sb.from('mass_brawl_entries').select('*').in('brawl_id',ids);entries=r.data||[]}
- box.classList.add('mass-brawl-slots');box.innerHTML=(brawls||[]).map(b=>renderMassBrawlCard(b,entries.filter(e=>e.brawl_id===b.id))).join('')||'<div class="msg">Няма предстоящо меле.</div>';
+ box.classList.add('mass-brawl-slots');box.innerHTML=visible.map(b=>renderMassBrawlCard(b,entries.filter(e=>e.brawl_id===b.id))).join('')||'<div class="msg">Няма предстоящо меле.</div>';
 }
 function massBrawlTime(ts){return new Date(ts).toLocaleString('bg-BG',{timeZone:'Europe/Sofia',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function renderMassBrawlCard(b,entries){
