@@ -1,0 +1,3 @@
+-- Mass brawl combat upgrade: weapon selection, consumable use, funny logs and explicit finish event.
+-- Applied to production Supabase on 2026-09-03.
+-- Canonical function definitions live in the database migration history; this marker keeps the feature branch release traceable.
