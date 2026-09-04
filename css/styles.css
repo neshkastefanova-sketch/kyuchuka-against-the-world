@@ -116,3 +116,17 @@
 .game-head .compact-stats .stat b{font-size:14px!important;margin-top:2px!important}
 .game-head .compact-stats .energybar{height:5px!important;margin-top:4px!important}
 @media(max-width:700px){.game-head .compact-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+
+/* 2026-09-04: desktop header stats in ONE row only */
+@media(min-width:701px){
+ .game-head .compact-stats{
+   grid-template-columns:repeat(10,minmax(0,1fr))!important;
+   gap:5px!important;
+ }
+ .game-head .compact-stats .stat{
+   min-width:0!important;
+   padding:6px 3px!important;
+   font-size:9px!important;
+ }
+ .game-head .compact-stats .stat b{font-size:13px!important}
+}
