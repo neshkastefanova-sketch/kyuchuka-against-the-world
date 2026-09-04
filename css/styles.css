@@ -95,3 +95,16 @@
  #game #invPanel .rpg-hero-layout{grid-template-columns:1fr!important}
  #game #invPanel .rpg-paperdoll{width:min(390px,100%)!important;margin:0 auto}
 }
+
+/* Header stat cards only: keep them small, equal and in one row. Do not affect module cards. */
+#topStats,#playerStats,.top-stats,.player-stats,.stats-grid{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:6px!important;
+}
+#topStats>*,#playerStats>*,.top-stats>*,.player-stats>*,.stats-grid>*{
+  min-width:0!important;
+  padding:7px 8px!important;
+  min-height:52px!important;
+  margin:0!important;
+}
