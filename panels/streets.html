@@ -1,1 +1,55 @@
-<div class="panel active" id="streets"><div class="card streets-card"><div class="streets-head"><div><h2 class="section-title">⚔️ Уличките</h2><div class="tiny">Кварталът е разделен на RPG зони. Опасността, играчите и плячката са различни във всяко място.</div></div><span class="streets-status" id="streetCurrentStatus">📍 Кючука</span></div><div class="zone-danger-bar"><span>🟢 Спокойно</span><span>🟡 Напечено</span><span>🔴 Опасно</span></div><div class="streets-scene"><div class="streets-map"><button class="street-hotspot venus" data-location="Дискотека Венера" onclick="selectStreetLocation(this,'Дискотека Венера')"></button><button class="street-hotspot blocks" data-location="Междублоковото" onclick="selectStreetLocation(this,'Междублоковото')"></button><button class="street-hotspot dark-alley" data-location="Тъмната уличка" onclick="selectStreetLocation(this,'Тъмната уличка')"></button><button class="street-hotspot cafe" data-location="Кафето" onclick="selectStreetLocation(this,'Кафето')"></button><button class="street-hotspot court" data-location="Игрището" onclick="selectStreetLocation(this,'Игрището')"></button><button class="street-hotspot stop" data-location="Спирката" onclick="selectStreetLocation(this,'Спирката')"></button><button class="street-hotspot police" disabled></button></div></div><div class="street-zone-panel"><div><h3 id="streetSpotTitle">Играчите наоколо</h3><div class="tiny" id="streetSpotText">Избери зона.</div></div><div class="zone-loot"><b>🎁 ПЛЯЧКА ОТ ЗОНАТА</b><span class="tiny">5 енергия · шанс за рядък, епичен или легендарен предмет</span><button class="gold" onclick="searchStreetLoot()">🔎 ПРЕТЪРСИ РАЙОНА</button></div></div><div id="streetSocialActions" class="street-social-actions"></div><div id="neighborhoodActions" class="neighborhood-actions"><button onclick="throwAtBabaPena()">🧨 Пиратка под терасата на баба Пена</button><button onclick="reserveMyParking()">🅿️ Запази паркомясто с туби</button></div><div id="streetEventResult"></div><div class="players" id="players"></div><div class="street-local-box"><h3>💬 Мохабет тук</h3><div class="street-chat-compose"><input id="streetChatInput" maxlength="180" placeholder="Кажи нещо на хората тук..."/><button onclick="sendStreetMessage()">КАЖИ</button></div><div class="players" id="streetMessages"></div></div><div class="street-local-box"><h3>📰 Какво става наоколо</h3><div class="players" id="streetEvents"></div></div></div><div class="card"><h2 class="section-title">🗣️ Квартални задачи</h2><p class="tiny">Познатите лица винаги имат нещо „спешно“ за вършене. Куестовете се обновяват всеки ден.</p><div id="npcQuests" class="npc-quest-grid"></div><style>.npc-quest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}.npc-quest{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:11px;border:1px solid #444;border-radius:10px;background:#171717}.npc-face{font-size:30px}.npc-quest h3,.npc-quest p{margin:0 0 5px}.quest-ready{border-color:#9a7927}.quest-progress{margin:6px 0;font-size:12px}</style></div><div class="card streets-ranking"><h2 class="section-title">🏆 Класация</h2><div class="players" id="leaderboard"></div></div></div>
+<div class="panel active" id="streets">
+  <div class="card streets-card">
+    <div class="streets-head"><div><h2 class="section-title">⚔️ Уличките</h2><div class="tiny">Кварталът е разделен на RPG зони. Опасността, играчите и плячката са различни във всяко място.</div></div><span class="streets-status" id="streetCurrentStatus">📍 Кючука</span></div>
+    <div class="zone-danger-bar"><span>🟢 Спокойно</span><span>🟡 Напечено</span><span>🔴 Опасно</span></div>
+    <div class="streets-scene"><div class="streets-map">
+      <button class="street-hotspot venus" data-location="Дискотека Венера" onclick="selectStreetLocation(this,'Дискотека Венера')"></button>
+      <button class="street-hotspot blocks" data-location="Междублоковото" onclick="selectStreetLocation(this,'Междублоковото')"></button>
+      <button class="street-hotspot dark-alley" data-location="Тъмната уличка" onclick="selectStreetLocation(this,'Тъмната уличка')"></button>
+      <button class="street-hotspot cafe" data-location="Кафето" onclick="selectStreetLocation(this,'Кафето')"></button>
+      <button class="street-hotspot court" data-location="Игрището" onclick="selectStreetLocation(this,'Игрището')"></button>
+      <button class="street-hotspot stop" data-location="Спирката" onclick="selectStreetLocation(this,'Спирката')"></button>
+      <button class="street-hotspot police" disabled></button>
+    </div></div>
+    <div class="street-zone-panel"><div><h3 id="streetSpotTitle">Играчите наоколо</h3><div class="tiny" id="streetSpotText">Избери зона.</div></div><div class="zone-loot"><b>🎁 ПЛЯЧКА ОТ ЗОНАТА</b><span class="tiny">5 енергия · шанс за рядък, епичен или легендарен предмет</span><button class="gold" onclick="searchStreetLoot()">🔎 ПРЕТЪРСИ РАЙОНА</button></div></div>
+    <div id="streetSocialActions" class="street-social-actions"></div>
+    <div id="neighborhoodActions" class="neighborhood-actions"><button onclick="throwAtBabaPena()">🧨 Пиратка под терасата на баба Пена</button><button onclick="reserveMyParking()">🅿️ Запази паркомясто с туби</button></div>
+    <div id="streetEventResult"></div><div class="players" id="players"></div>
+    <div class="street-local-box"><h3>📰 Какво става наоколо</h3><div class="players" id="streetEvents"></div></div>
+  </div>
+
+  <div class="card quests-compact">
+    <h2 class="section-title">🗣️ Квартални задачи</h2>
+    <p class="tiny">Куестовете се обновяват всеки ден.</p>
+    <div id="npcQuests" class="npc-quest-grid"></div>
+  </div>
+
+  <div class="street-social-grid">
+    <div class="card street-chat-card">
+      <h2 class="section-title">💬 Мохабет тук</h2>
+      <div class="street-chat-compose"><input id="streetChatInput" maxlength="180" placeholder="Кажи нещо на хората тук..."/><button onclick="sendStreetMessage()">КАЖИ</button></div>
+      <div class="players" id="streetMessages"></div>
+    </div>
+    <div class="card streets-ranking">
+      <h2 class="section-title">🏆 Класация</h2>
+      <div class="players" id="leaderboard"></div>
+    </div>
+  </div>
+
+  <style>
+    .quests-compact{padding:10px 12px!important}
+    .quests-compact .section-title{margin-bottom:4px}
+    .npc-quest-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+    .npc-quest{display:grid;grid-template-columns:auto 1fr;gap:7px;padding:7px;border:1px solid #444;border-radius:8px;background:#171717;font-size:11px;line-height:1.18;min-height:0}
+    .npc-face{font-size:22px}.npc-quest h3{font-size:13px;margin:0 0 3px}.npc-quest p{font-size:10px;margin:0 0 4px}.quest-ready{border-color:#9a7927}.quest-progress{margin:4px 0;font-size:10px}.npc-quest button{padding:5px 7px;font-size:10px}
+    .street-social-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;align-items:start}
+    .street-chat-card,.streets-ranking{margin:0!important;min-width:0}
+    .street-chat-card .street-chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-bottom:7px}
+    .street-chat-card input{width:100%}
+    .street-chat-card #streetMessages,.streets-ranking #leaderboard{max-height:360px;overflow:auto}
+    .street-chat-card .player,.streets-ranking .player{padding:8px}
+    @media(max-width:1050px){.npc-quest-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:800px){.npc-quest-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.street-social-grid{grid-template-columns:1fr}}
+    @media(max-width:520px){.npc-quest-grid{grid-template-columns:1fr}}
+  </style>
+</div>
