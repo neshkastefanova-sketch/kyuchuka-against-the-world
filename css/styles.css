@@ -54,3 +54,13 @@
  #game #activityCard{display:block}
  #game #activityCard>*{margin:4px 0}
 }
+
+/* Recent actions: compact launcher + popup */
+.recent-actions-launch{display:flex;justify-content:flex-end;margin:8px 0}
+.recent-actions-btn{width:auto!important;min-width:180px;padding:9px 14px!important}
+.actions-modal{width:min(720px,92vw);max-height:78vh;overflow:hidden;display:flex;flex-direction:column}
+.actions-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.actions-modal-head h2{margin:0}
+.actions-modal-head button{width:auto}
+.actions-modal #actions{overflow:auto;max-height:62vh;padding-right:4px}
+.actions-modal #actions>*{margin-bottom:5px}
