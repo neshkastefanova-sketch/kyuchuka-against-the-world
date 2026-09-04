@@ -64,3 +64,38 @@
 .actions-modal-head button{width:auto}
 .actions-modal #actions{overflow:auto;max-height:62vh;padding-right:4px}
 .actions-modal #actions>*{margin-bottom:5px}
+
+/* Hero screen: compact paperdoll instead of stretched avatar field */
+#invPanel>.card{padding:10px}
+#invPanel .rpg-hero-layout{display:grid!important;grid-template-columns:380px minmax(0,1fr)!important;gap:14px!important;align-items:start!important}
+#invPanel .rpg-paperdoll{width:380px!important;height:470px!important;min-height:470px!important;max-height:470px!important;position:relative!important;border:1px solid #5d4921;border-radius:12px;background:rgba(8,8,10,.88);overflow:hidden}
+#invPanel .character-preview-card{position:absolute!important;left:92px!important;top:35px!important;width:196px!important;height:390px!important;min-height:0!important;border:0!important;background:transparent!important;padding:0!important}
+#invPanel .character-preview-stack{width:100%!important;height:350px!important;min-height:0!important}
+#invPanel .character-preview-stack img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important}
+#invPanel .character-preview-note{display:none!important}
+#invPanel .gear-slot{position:absolute!important;width:78px!important;height:82px!important;min-height:0!important;padding:5px!important;z-index:5}
+#invPanel .gear-slot span{font-size:25px!important}
+#invPanel .gear-slot small{font-size:9px!important}
+#invPanel .gear-slot .gear-item-name{font-size:9px!important;line-height:1.1!important}
+#invPanel .gear-head{left:8px!important;top:8px!important}
+#invPanel .gear-neck{right:8px!important;top:92px!important}
+#invPanel .gear-weapon{left:8px!important;top:190px!important}
+#invPanel .gear-body{right:8px!important;top:190px!important}
+#invPanel .gear-legs{right:8px!important;top:282px!important}
+#invPanel .gear-feet{left:8px!important;bottom:8px!important}
+#invPanel .character-side{min-width:0}
+#invPanel .character-side>h3{margin:4px 0 7px}
+#invPanel .hero-avatar-picker{display:grid!important;grid-template-columns:repeat(4,minmax(90px,1fr))!important;gap:7px!important}
+#invPanel .hero-avatar-picker>*{min-height:92px!important;max-height:112px!important}
+#invPanel .rpg-life-grid{gap:7px!important;margin:8px 0!important}
+#invPanel .life-card{padding:8px!important;min-height:70px!important}
+#invPanel .character-side #regalia,#invPanel .character-side #combatPets,#invPanel .character-side #lootBoxes{max-height:260px;overflow:auto}
+@media(max-width:900px){
+ #invPanel .rpg-hero-layout{grid-template-columns:1fr!important}
+ #invPanel .rpg-paperdoll{width:min(380px,100%)!important;margin:auto}
+}
+@media(max-width:430px){
+ #invPanel .rpg-paperdoll{height:430px!important;min-height:430px!important;max-height:430px!important}
+ #invPanel .character-preview-card{left:72px!important;width:190px!important;height:350px!important}
+ #invPanel .hero-avatar-picker{grid-template-columns:repeat(2,1fr)!important}
+}
