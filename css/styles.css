@@ -96,15 +96,23 @@
  #game #invPanel .rpg-paperdoll{width:min(390px,100%)!important;margin:0 auto}
 }
 
-/* Header stat cards only: keep them small, equal and in one row. Do not affect module cards. */
-#topStats,#playerStats,.top-stats,.player-stats,.stats-grid{
-  display:grid!important;
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
-  gap:6px!important;
+
+/* Header stats: target the actual .compact-stats markup only */
+.game-head .compact-stats{
+ display:grid!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ gap:5px!important;
+ margin:8px 0 0!important;
 }
-#topStats>*,#playerStats>*,.top-stats>*,.player-stats>*,.stats-grid>*{
-  min-width:0!important;
-  padding:7px 8px!important;
-  min-height:52px!important;
-  margin:0!important;
+.game-head .compact-stats .stat{
+ min-width:0!important;
+ min-height:54px!important;
+ padding:6px 4px!important;
+ margin:0!important;
+ border-radius:7px!important;
+ font-size:10px!important;
+ text-align:center!important;
 }
+.game-head .compact-stats .stat b{font-size:14px!important;margin-top:2px!important}
+.game-head .compact-stats .energybar{height:5px!important;margin-top:4px!important}
+@media(max-width:700px){.game-head .compact-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
