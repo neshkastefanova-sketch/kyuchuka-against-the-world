@@ -33,8 +33,8 @@
 #game .collection-card{padding:7px!important}
 #game #actions{max-height:160px;overflow:auto}
 @media(min-width:1051px){
- #game .panel.active:not(#streets):not(#mapPanel){columns:2;column-gap:10px}
- #game .panel.active:not(#streets):not(#mapPanel)>.card{break-inside:avoid;margin:0 0 10px}
+ #game .panel.active:not(#streets):not(#mapPanel):not(#invPanel){columns:2;column-gap:10px}
+ #game .panel.active:not(#streets):not(#mapPanel):not(#invPanel)>.card{break-inside:avoid;margin:0 0 10px}
  #game #gangPanel{columns:2}
 }
 @media(max-width:800px){
@@ -98,4 +98,22 @@
  #invPanel .rpg-paperdoll{height:430px!important;min-height:430px!important;max-height:430px!important}
  #invPanel .character-preview-card{left:72px!important;width:190px!important;height:350px!important}
  #invPanel .hero-avatar-picker{grid-template-columns:repeat(2,1fr)!important}
+}
+
+/* Hero screen correction: keep the whole character screen full-width */
+#game #invPanel{columns:auto!important;width:100%!important}
+#game #invPanel>.card{width:100%!important;max-width:none!important;display:block!important}
+#game #invPanel .rpg-hero-layout{grid-template-columns:390px minmax(0,1fr)!important;gap:18px!important}
+#game #invPanel .character-side{width:100%!important;max-width:none!important}
+#game #invPanel .hero-avatar-picker{grid-template-columns:repeat(4,minmax(120px,1fr))!important}
+#game #invPanel .rpg-life-grid{grid-template-columns:repeat(3,minmax(150px,1fr))!important}
+@media(max-width:1000px){
+ #game #invPanel .rpg-hero-layout{grid-template-columns:340px minmax(0,1fr)!important}
+ #game #invPanel .rpg-paperdoll{width:340px!important}
+ #game #invPanel .hero-avatar-picker{grid-template-columns:repeat(2,minmax(120px,1fr))!important}
+}
+@media(max-width:760px){
+ #game #invPanel .rpg-hero-layout{grid-template-columns:1fr!important}
+ #game #invPanel .rpg-paperdoll{width:min(390px,100%)!important;margin:0 auto}
+ #game #invPanel .rpg-life-grid{grid-template-columns:1fr!important}
 }
